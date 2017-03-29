@@ -53,34 +53,166 @@ void video_decode(std::string filePath){
     av_register_all();
 
 
+    AVFormatContext *pFormatCtx = NULL;
 
-
-
-    AVCodec* codec;
-    AVCodecContext* c = NULL;
-    int frame, got_picture, len;
-    FILE* f;
-    AVFrame *picture;
-    uint8_t inbuf[INBUF_SIZE + FF_INPUT_BUFFER_PADDING_SIZE];
-
-    char buf[1024];
-    AVPacket avpkt;
-
-    av_init_packet(&avpkt);
-    memset(inbuf + INBUF_SIZE, 0, FF_INPUT_BUFFER_PADDING_SIZE);
-
-    QTextStream(stdout)<< "Video decoding..."<< endl;
-
-    // Find mpeg-1 docoder
-    codec = avcodec_find_decoder(AV_CODEC_ID_MPEG2VIDEO);
-
-    if(!codec){
-        QTextStream(stdout)<< "Codec not found"<< endl;
+    const char* Path = filePath.c_str();
+    if(avformat_open_input(&pFormatCtx, Path, NULL, NULL) != 0){
+        QTextStream (stdout) << "Cannot open file" << endl;
+    }
+    else{
+        QTextStream (stdout) << "File open successful" << endl;
     }
 
-    c = avcodec_alloc_context3(codec);
+    if(avformat_find_stream_info(pFormatCtx, NULL) < 0){
+        QTextStream (stdout) << "Cannot find video info" << endl;
+    }
+    else{
+        // Print video info on screen
+        av_dump_format(pFormatCtx, 0, Path, 0);
+    }
+
+    unsigned int i;
+    AVCodecContext *pCodecCtxOrig = NULL;
+    AVCodecContext *pCodecCtx = NULL;
+    QTextStream(stdout) << "Codec Name is " << pFormatCtx->streams[0]->codecpar->height << endl;
+
+
+    unsigned int videoStream = -1;
+
+    for(i=0; i<pFormatCtx->nb_streams; i++){
+        if(pFormatCtx->streams[i]->codecpar->codec_type==AVMEDIA_TYPE_VIDEO){
+            videoStream = i;
+
+            QTextStream(stdout) << "i= " << i << endl;
+            break;
+        }
+
+    }
+    if(videoStream == -1){
+        QTextStream(stdout) << "Cannot find video stream" << endl;
+        exit(0);
+    }
+    else{
+        QTextStream(stdout) << "Video stream found at i= " <<videoStream << endl;
+
+    }
+
+    pCodecCtxOrig=pFormatCtx->streams[videoStream]->codec;
+
+    QTextStream(stdout) << "Frame size check: " << pCodecCtxOrig->width << " "<< pCodecCtxOrig->height << endl;
+    AVCodec *pCodec = NULL;
+
+    // Find decoder
+    pCodec = avcodec_find_decoder(pCodecCtxOrig->codec_id);
+    if(pCodec == NULL){
+        QTextStream(stdout) << "Cannot find codec for this video type" << endl;
+        exit(0);
+    }
+    else{
+        QTextStream(stdout) << "Codec found " << pCodec<< endl;
+
+    }
+
+    // Memory allocations
+    pCodecCtx = avcodec_alloc_context3(pCodec);
+
+    if(avcodec_copy_context(pCodecCtx, pCodecCtxOrig)!=0){
+        QTextStream(stdout) << "Cannot copy codec" << endl;
+        exit(0);
+    }
+
+    // Open codec
+    if(avcodec_open2(pCodecCtx, pCodec, NULL)<0){
+        exit(0);
+    }
+
+    // Storing data
+    AVFrame *pFrame = NULL;
+    pFrame = av_frame_alloc();
+
+    AVFrame *pFrameRGB;
+    pFrameRGB = av_frame_alloc();
+
+    uint8_t* buffer = NULL;
+    int numBytes;
+    numBytes = avpicture_get_size(AV_PIX_FMT_YUV420P, pCodecCtx->width, pCodecCtx->height);
+    buffer=(uint8_t*)av_malloc(numBytes*sizeof(uint8_t));
+
+    avpicture_fill((AVPicture*)pFrameRGB, buffer, AV_PIX_FMT_YUV420P, pCodecCtx->width, pCodecCtx->height);
+
+    // Storing data //
+    struct SwsContext *sws_ctx = NULL;
+    int frameFinished;
+    AVPacket packet;
+
+    QTextStream(stdout) << "Frame size check: " << pCodecCtx->width << " "<< pCodecCtx->height << endl; // working
+
+    sws_ctx = sws_getContext(    pCodecCtx->width,
+                                 pCodecCtx->height,
+                                 pCodecCtx->pix_fmt,
+                                 pCodecCtx->width,
+                                 pCodecCtx->height,
+                                 AV_PIX_FMT_YUV420P,
+                                 SWS_BILINEAR,
+                                 NULL,
+                                 NULL,
+                                 NULL
+                                 );
+
+    i = 0;
+
+    while(av_read_frame(pFormatCtx, &packet) >= 0){
+        if(packet.stream_index==videoStream) {
+          // Decode video frame
+          avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+          QTextStream(stdout) << "bad" <<endl;
+
+          if(frameFinished) {
+          // Convert the image from its native format to YUV
+              sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data,
+                pFrame->linesize, 0, pCodecCtx->height,
+                pFrameRGB->data, pFrameRGB->linesize);
+              QTextStream(stdout) << "good" <<endl;
+
+              // Save the frame to disk
+              if(++i<=5){
+                  FILE *pFile;
+                  char szFilename[32];
+                  int  y;
+
+                  // Open file
+                  sprintf(szFilename, "frame%d.ppm", i);
+                  pFile=fopen(szFilename, "wb");
+                  if(pFile==NULL)
+                    break;
+
+                  // Write header
+                  fprintf(pFile, "P6\n%d %d\n255\n", pCodecCtx->width, pCodecCtx->height);
+
+                  // Write pixel data
+                  for(y=0; y<pCodecCtx->height; y++)
+                    fwrite(pFrameRGB->data[0]+y*pFrameRGB->linesize[0], 1, (pCodecCtx->width)*3, pFile);
+
+                  // Close file
+                  fclose(pFile);
+              }
+
+          }
+        }
+        av_free_packet(&packet);
+    }
+
+    av_free(buffer);
+    av_free(pFrameRGB);
+
+    // Free the YUV frame
+    av_free(pFrame);
+
+    // Close the codecs
+    avcodec_close(pCodecCtx);
+    avcodec_close(pCodecCtxOrig);
+
+    // Close the video file
+    avformat_close_input(&pFormatCtx);
 
 }
-
-
-
