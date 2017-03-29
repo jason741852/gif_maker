@@ -79,7 +79,6 @@ void video_decode(std::string filePath){
     }
 
     c = avcodec_alloc_context3(codec);
-    picture = avcodec_alloc_frame();
 
 }
 

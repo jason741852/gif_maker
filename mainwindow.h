@@ -20,12 +20,6 @@ extern "C" {
     #include <libswresample/swresample.h>
     #include <libavutil/avutil.h>
     #include <libswscale/swscale.h>
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libavutil/common.h>
-#include <libswresample/swresample.h>
-#include <libavutil/avutil.h>
-#include <libswscale/swscale.h>
 }
 
 #include <QMainWindow>
