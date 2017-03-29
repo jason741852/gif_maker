@@ -15,7 +15,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-    QString filename = QFileDialog::getOpenFileName(this, tr("Open File"), "C://", "avi (*.avi)");
+    QString filename = QFileDialog::getOpenFileName(this, tr("Open File"), "C://", "mpg (*.mpg)");
 
     QMessageBox::information(this,tr("File Name"), filename);
 
@@ -25,6 +25,8 @@ void MainWindow::on_pushButton_clicked()
 
     video_bitstream_read(cap);
 
-    AVCodec *codec;
+    video_playback_test(cap);
+
+    video_decode(vPath);
 
 }
