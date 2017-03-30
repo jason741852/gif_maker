@@ -2,13 +2,16 @@
 #define HELPER_H
 
 #include "mainwindow.h"
+#include "gif_maker.h"
+
+struct gif;
+
+bool gifHeader(gif* Gif);
 
 void video_playback_test (cv::VideoCapture& cap);
 
 void video_bitstream_read (cv::VideoCapture& cap);
 
 void video_decode(std::string filePath);
-
-//void SaveFrame(AVFrame *pFrame, int width, int height, int iFrame);
 
 #endif // HELPER_H

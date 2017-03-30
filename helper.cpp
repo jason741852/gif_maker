@@ -2,6 +2,62 @@
 
 #define INBUF_SIZE 4096
 
+struct gif{
+    FILE* f;
+};
+typedef struct gif gif;
+
+bool gifHeaderDescriptor(gif *Gif, uint32_t frame_width, uint32_t frame_height){
+    QTextStream(stdout) << "crash!" << endl;
+    const char* filename = "test.gif";
+//    FILE* f;
+    Gif->f = fopen(filename,"wb");
+
+    //gif_maker->file = fopen(filename,"wb");
+    QTextStream(stdout) << "crash?" << endl;
+
+    // signature
+    fputs("GIF89a", Gif->f);
+
+    // screen descriptor
+    fputc(frame_width & 0xff, Gif->f);
+    fputc((frame_width >> 8) & 0xff, Gif->f);
+    fputc(frame_height & 0xff, Gif->f);
+    fputc((frame_height >> 8) & 0xff, Gif->f);
+
+    fputc(0xf0, Gif->f);  // there is an unsorted global color table of 2 entries
+    fputc(0, Gif->f);     // background color
+    fputc(0, Gif->f);     // pixels are square (we need to specify this because it's 1989)
+
+    // now the "global" palette (really just a dummy palette)
+    // color 0: black
+    fputc(0, Gif->f);
+    fputc(0, Gif->f);
+    fputc(0, Gif->f);
+    // color 1: also black
+    fputc(0, Gif->f);
+    fputc(0, Gif->f);
+    fputc(0, Gif->f);
+
+    // animation header
+    fputc(0x21, Gif->f); // extension
+    fputc(0xff, Gif->f); // application specific
+    fputc(11, Gif->f); // length 11
+    fputs("NETSCAPE2.0", Gif->f); // yes, really
+    fputc(3, Gif->f); // 3 bytes of NETSCAPE2.0 data
+
+    fputc(1, Gif->f); // JUST BECAUSE
+    fputc(0, Gif->f); // loop infinitely (byte 0)
+    fputc(0, Gif->f); // loop infinitely (byte 1)
+
+    fputc(0, Gif->f); // block terminator
+
+
+
+    fclose(Gif->f);
+
+    return true;
+}
 
 void video_playback_test (cv::VideoCapture& cap){
     if (!cap.isOpened())
@@ -135,10 +191,11 @@ void video_decode(std::string filePath){
 
     uint8_t* buffer = NULL;
     int numBytes;
-    numBytes = avpicture_get_size(AV_PIX_FMT_YUV420P, pCodecCtx->width, pCodecCtx->height);
+    numBytes = avpicture_get_size(AV_PIX_FMT_RGB24, pCodecCtx->width, pCodecCtx->height);
     buffer=(uint8_t*)av_malloc(numBytes*sizeof(uint8_t));
 
-    avpicture_fill((AVPicture*)pFrameRGB, buffer, AV_PIX_FMT_YUV420P, pCodecCtx->width, pCodecCtx->height);
+
+    avpicture_fill((AVPicture*)pFrameRGB, buffer, AV_PIX_FMT_RGB24, pCodecCtx->width, pCodecCtx->height);
 
     // Storing data //
     struct SwsContext *sws_ctx = NULL;
@@ -152,7 +209,7 @@ void video_decode(std::string filePath){
                                  pCodecCtx->pix_fmt,
                                  pCodecCtx->width,
                                  pCodecCtx->height,
-                                 AV_PIX_FMT_YUV420P,
+                                 AV_PIX_FMT_RGB24,
                                  SWS_BILINEAR,
                                  NULL,
                                  NULL,
@@ -160,19 +217,26 @@ void video_decode(std::string filePath){
                                  );
 
     i = 0;
+    QTextStream(stdout)<< "number of channels: " << pCodecCtx->channels << endl;
+    QTextStream(stdout)<< "uint32 width test: " << (uint32_t) pCodecCtx->width <<endl;
+
+    // TODO: convert to gif frame by frame here
+    // Init gif Structure and header
+    gif* g = new gif;
+    gifHeaderDescriptor(g, (uint32_t) pCodecCtx->width, (uint32_t) pCodecCtx->height);
 
     while(av_read_frame(pFormatCtx, &packet) >= 0){
         if(packet.stream_index==videoStream) {
           // Decode video frame
           avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
-          QTextStream(stdout) << "bad" <<endl;
+         // QTextStream(stdout) << "bad" <<endl;
 
           if(frameFinished) {
           // Convert the image from its native format to YUV
               sws_scale(sws_ctx, (uint8_t const * const *)pFrame->data,
                 pFrame->linesize, 0, pCodecCtx->height,
                 pFrameRGB->data, pFrameRGB->linesize);
-              QTextStream(stdout) << "good" <<endl;
+              //QTextStream(stdout) << "good" <<endl;
 
               // Save the frame to disk
               if(++i<=5){
@@ -188,10 +252,14 @@ void video_decode(std::string filePath){
 
                   // Write header
                   fprintf(pFile, "P6\n%d %d\n255\n", pCodecCtx->width, pCodecCtx->height);
+                 // QTextStream(stdout)<< "number of channels: " << pCodecCtx->channels << endl;
+
 
                   // Write pixel data
-                  for(y=0; y<pCodecCtx->height; y++)
-                    fwrite(pFrameRGB->data[0]+y*pFrameRGB->linesize[0], 1, (pCodecCtx->width)*3, pFile);
+                  for(y=0; y<pCodecCtx->height; y++){
+                      fwrite(pFrameRGB->data[0]+y*pFrameRGB->linesize[0], 1, (pCodecCtx->width)*3, pFile);
+                      QTextStream(stdout) << "frame data: " << (uint64_t*) pFrameRGB->data[0]+y*pFrameRGB->linesize[0] << endl;
+                  }
 
                   // Close file
                   fclose(pFile);
@@ -215,4 +283,5 @@ void video_decode(std::string filePath){
     // Close the video file
     avformat_close_input(&pFormatCtx);
 
+    //gif_image
 }
