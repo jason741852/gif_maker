@@ -27,7 +27,9 @@ int main(int argc,char **argv){
     img.animationDelay(2000);
   }
 
-  Magick::writeImages(frames.begin(), frames.end(), "test.gif");
+  Magick::writeImages(frames.begin(), frames.end(), "Debug_Dir/test.gif");
+
+  return 0;
 
 
 }
