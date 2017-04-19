@@ -14,8 +14,8 @@ CC            = gcc
 CXX           = g++
 DEFINES       = -DQT_QML_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -g -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-CXXFLAGS      = -pipe $(shell Magick++-config --cppflags --cxxflags) -g -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-INCPATH       = -I../../gif_maker -I. -isystem /usr/include/ImageMagick-6 -isystem /usr/include/x86_64-linux-gnu/ImageMagick-6 -isystem /usr/include/ImageMagick-6/Magick++ -I../../Softwares/5.7/gcc_64/include -I../../Softwares/5.7/gcc_64/include/QtWidgets -I../../Softwares/5.7/gcc_64/include/QtGui -I../../Softwares/5.7/gcc_64/include/QtCore -I. -I. -I../../Softwares/5.7/gcc_64/mkspecs/linux-g++
+CXXFLAGS      = -pipe -g -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
+INCPATH       = -I../../gif_maker -I. -I../../Softwares/5.7/gcc_64/include -I../../Softwares/5.7/gcc_64/include/QtWidgets -I../../Softwares/5.7/gcc_64/include/QtGui -I../../Softwares/5.7/gcc_64/include/QtCore -I. -I. -I../../Softwares/5.7/gcc_64/mkspecs/linux-g++
 QMAKE         = /home/jason/Softwares/5.7/gcc_64/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -693,7 +693,7 @@ moc_mainwindow.cpp: ../helper.h \
 		../gif_maker.h \
 		../mainwindow.h \
 		../../Softwares/5.7/gcc_64/bin/moc
-	/home/jason/Softwares/5.7/gcc_64/bin/moc $(DEFINES) -I/home/jason/Softwares/5.7/gcc_64/mkspecs/linux-g++ -I/home/jason/gif_maker -I/usr/include/ImageMagick-6 -I/usr/include/x86_64-linux-gnu/ImageMagick-6 -I/usr/include/ImageMagick-6/Magick++ -I/home/jason/Softwares/5.7/gcc_64/include -I/home/jason/Softwares/5.7/gcc_64/include/QtWidgets -I/home/jason/Softwares/5.7/gcc_64/include/QtGui -I/home/jason/Softwares/5.7/gcc_64/include/QtCore -I. -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../mainwindow.h -o moc_mainwindow.cpp
+	/home/jason/Softwares/5.7/gcc_64/bin/moc $(DEFINES) -I/home/jason/Softwares/5.7/gcc_64/mkspecs/linux-g++ -I/home/jason/gif_maker -I/home/jason/Softwares/5.7/gcc_64/include -I/home/jason/Softwares/5.7/gcc_64/include/QtWidgets -I/home/jason/Softwares/5.7/gcc_64/include/QtGui -I/home/jason/Softwares/5.7/gcc_64/include/QtCore -I. -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../mainwindow.h -o moc_mainwindow.cpp
 
 compiler_moc_source_make_all:
 compiler_moc_source_clean:

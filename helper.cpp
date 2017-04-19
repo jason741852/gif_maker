@@ -277,142 +277,122 @@ void video_decode(std::string filePath){
     // Init gif Structure and header
     gif* g = new gif;
     gifHeaderDescriptor(g, (uint32_t) pCodecCtx->width, (uint32_t) pCodecCtx->height);
-    addFrame(g, (uint32_t) pCodecCtx->width, (uint32_t) pCodecCtx->height);
-    //////////////////////////////////////////////////////////////////// Magick++
-
-    Magick::Image img1( "100x100", "white" );
 
 
 
 
 
 
+    AVCodec* outCodec;
+    AVCodecContext* outC = NULL;
+    AVFrame* outFrame;
+    AVPacket outPacket;
 
+    outCodec = avcodec_find_encoder(AV_CODEC_ID_GIF);
+    if (!outCodec) {
+            QTextStream(stdout) << "Codec not found" << endl;
+            exit(1);
+    }
 
+    outC = avcodec_alloc_context3(outCodec);
+    if(!outC){
+        QTextStream(stdout) << "Codec alloc error" << endl;
+        exit(1);
+    }
 
-
-
-
-
-
-
-    ////////////////////////////////////////////////////////////
-
-
-
-
-
-
-//    AVCodec* outCodec;
-//    AVCodecContext* outC = NULL;
-//    AVFrame* outFrame;
-//    AVPacket outPacket;
-
-//    outCodec = avcodec_find_encoder(AV_CODEC_ID_GIF);
-//    if (!outCodec) {
-//            QTextStream(stdout) << "Codec not found" << endl;
-//            exit(1);
-//    }
-
-//    outC = avcodec_alloc_context3(outCodec);
-//    if(!outC){
-//        QTextStream(stdout) << "Codec alloc error" << endl;
-//        exit(1);
-//    }
-
-////    outC->bit_rate = pCodecCtx->bit_rate;
-////    outC->width = pCodecCtx->width;
-////    outC->height = pCodecCtx->height;
-////    outC->pix_fmt = AV_PIX_FMT_YUV420P;
+//    outC->bit_rate = pCodecCtx->bit_rate;
+//    outC->width = pCodecCtx->width;
+//    outC->height = pCodecCtx->height;
+//    outC->pix_fmt = AV_PIX_FMT_YUV420P;
 
 ////    gif_encode_init();
 
 //    GifFileType* gifFile = DGifOpenFileName("test.gif",NULL);
 //////////////////
-    const char* outputFile = "testing.gif";
-    AVOutputFormat* avoutputFormat;
-    AVFormatContext* avformatContext;
-    AVStream* avstream;
-    AVFrame* outFrame;
-    AVCodec* outCodec;
-    AVCodecContext* outC;
-    AVPacket outPkt;
-    int x, y;
-    int ret;
-    int output;
-    int write_ret;
-    //////////////////////////
+//    const char* outputFile = "testing.gif";
+//    AVOutputFormat* avoutputFormat;
+//    AVFormatContext* avformatContext;
+//    AVStream* avstream;
+//    AVFrame* outFrame;
+//    AVCodec* outCodec;
+//    AVCodecContext* outC;
+//    AVPacket outPkt;
+//    int x, y;
+//    int ret;
+//    int output;
+//    int write_ret;
+//    //////////////////////////
 
-    avoutputFormat = av_guess_format(NULL, outputFile, NULL);
-    if(!avoutputFormat){
-        QTextStream(stdout) << "Cannot guess format error" << endl;
-        exit(1);
-    };
+//    avoutputFormat = av_guess_format(NULL, outputFile, NULL);
+//    if(!avoutputFormat){
+//        QTextStream(stdout) << "Cannot guess format error" << endl;
+//        exit(1);
+//    };
 
-    QTextStream(stdout) << "Format name: " << avoutputFormat->name << endl;
-    QTextStream(stdout) << "Format codec: " << avoutputFormat->video_codec << endl; // GIF = 98
+//    QTextStream(stdout) << "Format name: " << avoutputFormat->name << endl;
+//    QTextStream(stdout) << "Format codec: " << avoutputFormat->video_codec << endl; // GIF = 98
 
-    avformatContext = avformat_alloc_context();
+//    avformatContext = avformat_alloc_context();
 
-    avformatContext->oformat = avoutputFormat;
+//    avformatContext->oformat = avoutputFormat;
 
-    snprintf(avformatContext->filename, sizeof(avformatContext->filename), "%s", outputFile);
+//    snprintf(avformatContext->filename, sizeof(avformatContext->filename), "%s", outputFile);
 
-    outCodec = avcodec_find_encoder(avoutputFormat->video_codec);
+//    outCodec = avcodec_find_encoder(avoutputFormat->video_codec);
 
-    avstream = avformat_new_stream(avformatContext, outCodec);
-    if (!avstream) {
-        QTextStream(stdout) << "stream error" << endl;
-        exit(1);
-    }
-    if(avstream->codec==NULL){
-        QTextStream(stdout) << "stream NULL" << endl;
-        exit(1);
-    }
+//    avstream = avformat_new_stream(avformatContext, outCodec);
+//    if (!avstream) {
+//        QTextStream(stdout) << "stream error" << endl;
+//        exit(1);
+//    }
+//    if(avstream->codec==NULL){
+//        QTextStream(stdout) << "stream NULL" << endl;
+//        exit(1);
+//    }
 
-    outC = avstream->codec;
+//    outC = avstream->codec;
 
-    outC->bit_rate = 40000;
-    outC->width = pCodecCtx->width;
-    outC->height = pCodecCtx->height;
-    outC->pix_fmt = AV_PIX_FMT_RGB8;
+//    outC->bit_rate = 40000;
+//    outC->width = pCodecCtx->width;
+//    outC->height = pCodecCtx->height;
+//    outC->pix_fmt = AV_PIX_FMT_RGB8;
 
 
     ///////////////////////////////////////////////
 
-    outFrame = av_frame_alloc();
-    outFrame->width = outC->width;
-    outFrame->height = outC->height;
-    outFrame->format =  outC->pix_fmt;
+//    outFrame = av_frame_alloc();
+//    outFrame->width = outC->width;
+//    outFrame->height = outC->height;
+//    outFrame->format =  outC->pix_fmt;
 
-    ret = av_image_alloc(outFrame->data, outFrame->linesize, outC->width, outC->height, outC->pix_fmt, 4);
+//    ret = av_image_alloc(outFrame->data, outFrame->linesize, outC->width, outC->height, outC->pix_fmt, 4);
 
-    if(ret<0){
-        QTextStream(stdout) << "Cannot allocate image buffer" << endl;
-        exit(1);
-    }
+//    if(ret<0){
+//        QTextStream(stdout) << "Cannot allocate image buffer" << endl;
+//        exit(1);
+//    }
 
-    if(avformatContext->oformat->flags & AVFMT_GLOBALHEADER){
-        outC->flags |= CODEC_FLAG_GLOBAL_HEADER;
-    }
+//    if(avformatContext->oformat->flags & AVFMT_GLOBALHEADER){
+//        outC->flags |= CODEC_FLAG_GLOBAL_HEADER;
+//    }
 
     //avformat_write_header(avformatContext, NULL);
 
-    for(int i=0; i<25;i++){
-        av_init_packet(&outPkt);
-        outPkt.data=NULL;
-        outPkt.size=0;
-        for(y=0;y<outC->height;y++) {
-            for(x=0;x<outC->width;x++) {
-                outFrame->data[0][y * outFrame->linesize[0] + x] = x + y + i * 3;
-               // outFrame->data[1][y * outFrame->linesize[0] + x] = x + y + i * 3;
-               // outFrame->data[2][y * outFrame->linesize[0] + x] = x + y + i * 3;
+//    for(int i=0; i<25;i++){
+//        av_init_packet(&outPkt);
+//        outPkt.data=NULL;
+//        outPkt.size=0;
+//        for(y=0;y<outC->height;y++) {
+//            for(x=0;x<outC->width;x++) {
+//                outFrame->data[0][y * outFrame->linesize[0] + x] = x + y + i * 3;
+//               // outFrame->data[1][y * outFrame->linesize[0] + x] = x + y + i * 3;
+//               // outFrame->data[2][y * outFrame->linesize[0] + x] = x + y + i * 3;
 
-            }
-        }
-    }
-    outFrame->pts = i;
-    ret = avcodec_encode_video2(outC, &outPkt, outFrame, &output);
+//            }
+//        }
+//    }
+//    outFrame->pts = i;
+//    ret = avcodec_encode_video2(outC, &outPkt, outFrame, &output);
 //    if(ret<0){
 //        QTextStream(stdout) << "Cannot encode video" << endl;
 //        exit(1);
@@ -437,7 +417,7 @@ void video_decode(std::string filePath){
 
 
 
-
+    i = 1;
     while(av_read_frame(pFormatCtx, &packet) >= 0){
         if(packet.stream_index==videoStream) {
           // Decode video frame
@@ -452,13 +432,13 @@ void video_decode(std::string filePath){
               //QTextStream(stdout) << "good" <<endl;
 
               // Save the frame to disk
-              if(++i<=5){
+              //if(++i<=10){
                   FILE *pFile;
                   char szFilename[32];
                   int  y;
 
                   // Open file
-                  sprintf(szFilename, "frame%d.ppm", i);
+                  sprintf(szFilename, "frames/frame%d.ppm", i);
                   pFile=fopen(szFilename, "wb");
                   if(pFile==NULL)
                     break;
@@ -476,10 +456,11 @@ void video_decode(std::string filePath){
 
                   // Close file
                   fclose(pFile);
-              }
+             // }
 
           }
         }
+        i++;
         av_free_packet(&packet);
     }
 
@@ -495,10 +476,6 @@ void video_decode(std::string filePath){
 
     // Close the video file
     avformat_close_input(&pFormatCtx);
-    QTextStream(stdout) << "frame data[0]: " << (uint64_t*) pFrameRGB->data[0];
-    QTextStream(stdout) << "frame data[1]: " << (uint64_t*) pFrameRGB->data[1];
-    QTextStream(stdout) << "frame data[2]: " << (uint64_t*) pFrameRGB->data[2];
-    QTextStream(stdout) << "frame data[3]: " << (uint64_t*) pFrameRGB->data[3];
 
 
     //gif_image
