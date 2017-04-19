@@ -6,7 +6,11 @@
 
 struct gif;
 
-bool gifHeader(gif* Gif);
+bool gifHeaderDescriptor(gif *Gif, uint32_t frame_width, uint32_t frame_height);
+
+bool addFrame(gif* Gif, uint32_t frame_width, uint32_t frame_height);
+
+bool closeGif(gif* Gif);
 
 void video_playback_test (cv::VideoCapture& cap);
 

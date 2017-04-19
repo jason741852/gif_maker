@@ -2,19 +2,16 @@
 
 #define INBUF_SIZE 4096
 
+
 struct gif{
     FILE* f;
+    uint8_t* frame;
 };
 typedef struct gif gif;
 
 bool gifHeaderDescriptor(gif *Gif, uint32_t frame_width, uint32_t frame_height){
-    QTextStream(stdout) << "crash!" << endl;
     const char* filename = "test.gif";
-//    FILE* f;
     Gif->f = fopen(filename,"wb");
-
-    //gif_maker->file = fopen(filename,"wb");
-    QTextStream(stdout) << "crash?" << endl;
 
     // signature
     fputs("GIF89a", Gif->f);
@@ -26,22 +23,22 @@ bool gifHeaderDescriptor(gif *Gif, uint32_t frame_width, uint32_t frame_height){
     fputc((frame_height >> 8) & 0xff, Gif->f);
 
     fputc(0xf0, Gif->f);  // there is an unsorted global color table of 2 entries
-    fputc(0, Gif->f);     // background color
+    fputc(5, Gif->f);     // background color
     fputc(0, Gif->f);     // pixels are square (we need to specify this because it's 1989)
 
     // now the "global" palette (really just a dummy palette)
     // color 0: black
-    fputc(0, Gif->f);
+    fputc(255, Gif->f);
     fputc(0, Gif->f);
     fputc(0, Gif->f);
     // color 1: also black
     fputc(0, Gif->f);
     fputc(0, Gif->f);
-    fputc(0, Gif->f);
+    fputc(255, Gif->f);
 
     // animation header
-    fputc(0x21, Gif->f); // extension
-    fputc(0xff, Gif->f); // application specific
+    fputc(0x21, Gif->f); // extension introducer
+    fputc(0xf9, Gif->f); // graphic control label
     fputc(11, Gif->f); // length 11
     fputs("NETSCAPE2.0", Gif->f); // yes, really
     fputc(3, Gif->f); // 3 bytes of NETSCAPE2.0 data
@@ -58,6 +55,64 @@ bool gifHeaderDescriptor(gif *Gif, uint32_t frame_width, uint32_t frame_height){
 
     return true;
 }
+
+
+
+// Routine to add frame to the gif file
+bool addFrame(gif *Gif, uint32_t frame_width, uint32_t frame_height){
+    // Use ASCII / Hex code
+    // Hex code is shown in text editor
+    // image descriptor
+    const char* filename = "test.gif";
+    Gif->f = fopen(filename,"a+"); // append
+
+    fputc(0x2c, Gif->f);
+    // Image Left
+    fputc(0, Gif->f);
+    fputc(0, Gif->f);
+    fputc(0, Gif->f);
+    fputc(0, Gif->f);
+
+    // Image Top
+    fputc(0, Gif->f);
+    fputc(0, Gif->f);
+    fputc(0, Gif->f);
+    fputc(0, Gif->f);
+
+    // Image width
+    fputc(frame_width & 0xff, Gif->f);
+    fputc((frame_width >> 8) & 0xff, Gif->f);
+
+    // Image height
+    fputc(frame_height & 0xff, Gif->f);
+    fputc((frame_height >> 8) & 0xff, Gif->f);
+
+    // Packet field with LCT flag, Interlace flag, Sort flag, Reserve, Size of LCT (total 8 bits
+    fputc(0, Gif->f);
+    fputc(0, Gif->f);
+
+    // LCT?
+
+
+    // LZW compression for image data
+
+
+
+    fclose(Gif->f);
+
+    return true;
+
+}
+
+
+
+// Routine to close gif file
+bool closeGif(gif *gif_maker){
+
+}
+
+
+
 
 void video_playback_test (cv::VideoCapture& cap){
     if (!cap.isOpened())
@@ -107,8 +162,6 @@ void video_bitstream_read (cv::VideoCapture& cap){
 /* Routine to decode mpeg-1 encoded video */
 void video_decode(std::string filePath){
     av_register_all();
-
-
     AVFormatContext *pFormatCtx = NULL;
 
     const char* Path = filePath.c_str();
@@ -224,6 +277,166 @@ void video_decode(std::string filePath){
     // Init gif Structure and header
     gif* g = new gif;
     gifHeaderDescriptor(g, (uint32_t) pCodecCtx->width, (uint32_t) pCodecCtx->height);
+    addFrame(g, (uint32_t) pCodecCtx->width, (uint32_t) pCodecCtx->height);
+    //////////////////////////////////////////////////////////////////// Magick++
+
+    Magick::Image img1( "100x100", "white" );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ////////////////////////////////////////////////////////////
+
+
+
+
+
+
+//    AVCodec* outCodec;
+//    AVCodecContext* outC = NULL;
+//    AVFrame* outFrame;
+//    AVPacket outPacket;
+
+//    outCodec = avcodec_find_encoder(AV_CODEC_ID_GIF);
+//    if (!outCodec) {
+//            QTextStream(stdout) << "Codec not found" << endl;
+//            exit(1);
+//    }
+
+//    outC = avcodec_alloc_context3(outCodec);
+//    if(!outC){
+//        QTextStream(stdout) << "Codec alloc error" << endl;
+//        exit(1);
+//    }
+
+////    outC->bit_rate = pCodecCtx->bit_rate;
+////    outC->width = pCodecCtx->width;
+////    outC->height = pCodecCtx->height;
+////    outC->pix_fmt = AV_PIX_FMT_YUV420P;
+
+////    gif_encode_init();
+
+//    GifFileType* gifFile = DGifOpenFileName("test.gif",NULL);
+//////////////////
+    const char* outputFile = "testing.gif";
+    AVOutputFormat* avoutputFormat;
+    AVFormatContext* avformatContext;
+    AVStream* avstream;
+    AVFrame* outFrame;
+    AVCodec* outCodec;
+    AVCodecContext* outC;
+    AVPacket outPkt;
+    int x, y;
+    int ret;
+    int output;
+    int write_ret;
+    //////////////////////////
+
+    avoutputFormat = av_guess_format(NULL, outputFile, NULL);
+    if(!avoutputFormat){
+        QTextStream(stdout) << "Cannot guess format error" << endl;
+        exit(1);
+    };
+
+    QTextStream(stdout) << "Format name: " << avoutputFormat->name << endl;
+    QTextStream(stdout) << "Format codec: " << avoutputFormat->video_codec << endl; // GIF = 98
+
+    avformatContext = avformat_alloc_context();
+
+    avformatContext->oformat = avoutputFormat;
+
+    snprintf(avformatContext->filename, sizeof(avformatContext->filename), "%s", outputFile);
+
+    outCodec = avcodec_find_encoder(avoutputFormat->video_codec);
+
+    avstream = avformat_new_stream(avformatContext, outCodec);
+    if (!avstream) {
+        QTextStream(stdout) << "stream error" << endl;
+        exit(1);
+    }
+    if(avstream->codec==NULL){
+        QTextStream(stdout) << "stream NULL" << endl;
+        exit(1);
+    }
+
+    outC = avstream->codec;
+
+    outC->bit_rate = 40000;
+    outC->width = pCodecCtx->width;
+    outC->height = pCodecCtx->height;
+    outC->pix_fmt = AV_PIX_FMT_RGB8;
+
+
+    ///////////////////////////////////////////////
+
+    outFrame = av_frame_alloc();
+    outFrame->width = outC->width;
+    outFrame->height = outC->height;
+    outFrame->format =  outC->pix_fmt;
+
+    ret = av_image_alloc(outFrame->data, outFrame->linesize, outC->width, outC->height, outC->pix_fmt, 4);
+
+    if(ret<0){
+        QTextStream(stdout) << "Cannot allocate image buffer" << endl;
+        exit(1);
+    }
+
+    if(avformatContext->oformat->flags & AVFMT_GLOBALHEADER){
+        outC->flags |= CODEC_FLAG_GLOBAL_HEADER;
+    }
+
+    //avformat_write_header(avformatContext, NULL);
+
+    for(int i=0; i<25;i++){
+        av_init_packet(&outPkt);
+        outPkt.data=NULL;
+        outPkt.size=0;
+        for(y=0;y<outC->height;y++) {
+            for(x=0;x<outC->width;x++) {
+                outFrame->data[0][y * outFrame->linesize[0] + x] = x + y + i * 3;
+               // outFrame->data[1][y * outFrame->linesize[0] + x] = x + y + i * 3;
+               // outFrame->data[2][y * outFrame->linesize[0] + x] = x + y + i * 3;
+
+            }
+        }
+    }
+    outFrame->pts = i;
+    ret = avcodec_encode_video2(outC, &outPkt, outFrame, &output);
+//    if(ret<0){
+//        QTextStream(stdout) << "Cannot encode video" << endl;
+//        exit(1);
+//    }
+
+//    if(output){
+//        if (outC->coded_frame->pts != AV_NOPTS_VALUE) {
+//                       outPkt.pts = av_rescale_q(outC->coded_frame->pts, outC->time_base, avstream->time_base);
+//        }
+//    }
+
+//    outPkt.pts = i;
+
+
+
+
+
+
+
+
+
+
+
+
 
     while(av_read_frame(pFormatCtx, &packet) >= 0){
         if(packet.stream_index==videoStream) {
@@ -258,7 +471,7 @@ void video_decode(std::string filePath){
                   // Write pixel data
                   for(y=0; y<pCodecCtx->height; y++){
                       fwrite(pFrameRGB->data[0]+y*pFrameRGB->linesize[0], 1, (pCodecCtx->width)*3, pFile);
-                      QTextStream(stdout) << "frame data: " << (uint64_t*) pFrameRGB->data[0]+y*pFrameRGB->linesize[0] << endl;
+                      //QTextStream(stdout) << "frame data: " << (uint64_t*) pFrameRGB->data[0]+y*pFrameRGB->linesize[0] << endl;
                   }
 
                   // Close file
@@ -282,6 +495,11 @@ void video_decode(std::string filePath){
 
     // Close the video file
     avformat_close_input(&pFormatCtx);
+    QTextStream(stdout) << "frame data[0]: " << (uint64_t*) pFrameRGB->data[0];
+    QTextStream(stdout) << "frame data[1]: " << (uint64_t*) pFrameRGB->data[1];
+    QTextStream(stdout) << "frame data[2]: " << (uint64_t*) pFrameRGB->data[2];
+    QTextStream(stdout) << "frame data[3]: " << (uint64_t*) pFrameRGB->data[3];
+
 
     //gif_image
 }

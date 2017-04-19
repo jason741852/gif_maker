@@ -9,4 +9,5 @@
     //typedef struct gif_file gif_file;
     bool writeGifHeader(gif_file* gif_maker);
 
+
 #endif // GIF_MAKER_H

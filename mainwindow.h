@@ -20,6 +20,9 @@ extern "C" {
     #include <libavutil/common.h>
     #include <libswresample/swresample.h>
     #include <libavutil/avutil.h>
+    #include <libavutil/imgutils.h>
+//    #include <libavcodec/gif.h>
+//    #include <libavcodec/gif.c>
     #include <libswscale/swscale.h>
 }
 
@@ -30,6 +33,34 @@ extern "C" {
 #include <QMessageBox>
 #include <QLabel>
 #include <QtGui>
+#include <Magick++.h>
+//#include <ImageMagick-6/Magick++/Blob.h>
+//#include <ImageMagick-6/Magick++/ChannelMoments.h>
+//#include <ImageMagick-6/Magick++/CoderInfo.h>
+//#include <ImageMagick-6/Magick++/Color.h>
+//#include <ImageMagick-6/Magick++/Drawable.h>
+//#include <ImageMagick-6/Magick++/Exception.h>
+//#include <ImageMagick-6/Magick++/Functions.h>
+//#include <ImageMagick-6/Magick++/Geometry.h>
+//#include <ImageMagick-6/Magick++/Image.h>
+//#include <ImageMagick-6/Magick++/Include.h>
+//#include <ImageMagick-6/Magick++/Montage.h>
+//#include <ImageMagick-6/Magick++/Pixels.h>
+//#include <ImageMagick-6/Magick++/TypeMetric.h>
+//#include <ImageMagick-6/Magick++/ResourceLimits.h>
+//#include <ImageMagick-6/Magick++/STL.h>
+
+//#include "ImageMagick-6/magick/magick-config.h"
+//#include <ImageMagick-6/Magick++/Include.h>
+//#include <ImageMagick-6/Magick++/Functions.h>
+//#include <ImageMagick-6/Magick++/Image.h>
+//#include <ImageMagick-6/Magick++/Pixels.h>
+//#include <ImageMagick-6/Magick++/ResourceLimits.h>
+//#include <ImageMagick-6/Magick++/STL.h>
+
+#include <libaec.h>
+#include <gif_lib.h>
+#include <list>
 
 namespace Ui {
 class MainWindow;

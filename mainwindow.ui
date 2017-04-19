@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Open video(.avi)</string>
+     <string>Open video(.mpg)</string>
     </property>
    </widget>
   </widget>
